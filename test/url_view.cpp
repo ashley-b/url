@@ -277,7 +277,8 @@ public:
                 auto it = ps.begin();
                 BOOST_TEST(it->string(sp.allocator()) == "path"); ++it;
                 BOOST_TEST(it->string(sp.allocator()) == "to"); ++it;
-                BOOST_TEST(it->string(sp.allocator()) == "file.txt");
+                BOOST_TEST(it->string(sp.allocator()) == "file.txt"); ++it;
+                BOOST_TEST(it == ps.end());
             }
 
             auto it = ps.begin();
@@ -286,10 +287,47 @@ public:
             BOOST_TEST(it->encoded_string() == "to");
             ++it;
             BOOST_TEST(it->encoded_string() == "file.txt");
+            {
+                auto next_it = it;
+                ++next_it;
+                BOOST_TEST(next_it == ps.end());
+            }
             --it;
             BOOST_TEST(it->encoded_string() == "to");
             it--;
             BOOST_TEST(it->encoded_string() == "path");
+        }
+        // Test with query present
+        {
+            url_view const v("/path/to/file.txt?q=42");
+            auto const ps = v.segments();
+            BOOST_TEST(! ps.empty());
+            BOOST_TEST(ps.size() == 3);
+
+            auto it = ps.begin();
+            BOOST_TEST(it->encoded_string() == "path");
+            it++;
+            BOOST_TEST(it->encoded_string() == "to");
+            ++it;
+            BOOST_TEST(it->encoded_string() == "file.txt");
+            ++it;
+            BOOST_TEST(it == ps.end());
+        }
+        // Test with fragment present
+        {
+            url_view const v("/path/to/file.txt#fragment");
+            auto const ps = v.segments();
+            BOOST_TEST(! ps.empty());
+            BOOST_TEST(ps.size() == 3);
+
+            auto it = ps.begin();
+            BOOST_TEST(it->encoded_string() == "path");
+            it++;
+            BOOST_TEST(it->encoded_string() == "to");
+            ++it;
+            BOOST_TEST(it->encoded_string() == "file.txt");
+            ++it;
+            BOOST_TEST(it == ps.end());
         }
     }
 
